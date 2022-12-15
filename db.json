@@ -1,9 +1,24 @@
 {
   "perfil": [
     {
-      "nombre": "Christian",
-      "email": "Christian@alura.com",
+      "nombre": "Agustin Perea",
+      "email": "agustinperea5gmail.com",
       "id": 1
+    },
+    {
+      "nombre": "sgusugsu",
+      "email": "Ahshd@jksdf.com",
+      "id": "c903e941-959f-4bf5-88b0-b2bc2d683bf1"
+    },
+    {
+      "nombre": "Agustincito",
+      "email": "perea.agustin5@jajajamail.com",
+      "id": "7477e104-aafc-42b5-9c4a-bbe07bcf236d"
+    },
+    {
+      "nombre": "Perepe",
+      "email": "pereara.agu6@gamilcom.com",
+      "id": "1e677e02-4a9c-454c-8738-f2d3db40d4d8"
     }
   ]
 }

@@ -1,0 +1,209 @@
+--------------------------PRESENTACION-------------------------------
+En este curso vamos a aprender como comunicarnos con un servidor, como crear una página en la cual puedas crear un nuevo cliente con su nombre y su email. Tambien vamos a poder ver y editar esa informacion.
+Aquí estamos aplicando lo que en web se conoce como CRUD, es decir, Create, Read, Update and Delete o en español, crear, leer, actualizar y eliminar. 
+vamos a ver cómo comunicar datos a través de HTTP con nuestro servidor. Vamos a ver cómo utilizar promesas y qué son. Vamos a ver nuevas características de JS, como try catch. También vamos a ver qué es lo que sucede cuando una promesa se cumple o cuando nuestro servidor nos regresa la información que nosotros necesitamos.
+
+
+---PREPARANDO EL AMBIENTE------------------------------------
+vamos a usar el json-server para simular un servidor y consumir los datos.
+
+Json-server está listado como dependiente del package.json, que es el archivo donde encontramos todas las bibliotecas externas que estamos usando en nuestro proyecto. Al hacer npm install dentro de la carpeta del proyecto y la descarga de json-server comienza automáticamente.
+
+El comando json-server --watch db.json necesita ser ejecutado dentro de la carpeta del proyecto de admin, caso contrario este comando no será reconocido.
+
+Otra información importante es que para funcionar localmente, en lugar de ejecutar el comando json-server --watch db.json, tenemos que ejecutar este comando con npx adelante:
+npx json-server --watch db.json
+
+En el caso de que quieras utilizar el comando sin el npx adelante es necesario instalar json-server de manera global:
+npm install -g json-serverCOPIA EL CÓDIGO
+Después, para subir el servidor, ejecutamos json-server --watch db.json
+
+----EXHIBIENDO DATOS #1----
+El archivo lista_cliente.html es nuestro archivo principal.
+Ahora queremos simular un Backend. Conectarnos a otra computadora y extraer informacion a traves de un url. Esa informacion viene en el archivo db.json.
+Vamos a utilizar una herramienta para simular un servidor. Esta es el json-server y se instala con npm install -g json-server en nuestra terminal. npm singnifica manjeador de paquetes de node. El -g es para que lo instale de manera global.
+
+Ahora hacemos: json-server --watch db.json
+El db.json es el archivo que queremos que utilice. Y copiamos la url que nos muestra. http://localhost:3000/perfil
+Y si pegamos el link en una pestaña, nos mostrará el archivo json ahí. Si modificamos el archivo y reiniciamos la pestaña (siempre sin cerrar la terminal) vamos a poder ver como se actualizan los cambios en la pestaña.
+La terminal se cierra con control+C.
+
+----EXHIBIENDO DATOS #2----
+Nosotros queremos mostrar datos del servidor hacia el HTML. 
+Tenemos algo llamado AJAX (Asyncronous Javascript and XML). Ahora, lo que nosotros vamos a necesitar es crear un archivo JavaScript donde podamos instanciar una nueva clase de XML para nosotros poder comunicarnos o conectarnos con nuestra API.
+
+Creamos una carpeta llamada service con un archivo client-service.js.
+(*1)Lo que nosotros queremos entonces es crear una nueva comunicación entre el front end y el back end. Esto lo vamos a lograr creando una clase que ya viene nativa en el navegador, que se llama XMLHttpRequest (Lo creamos como una clase con el new XMLHttpRequest()). Este, proporciona una forma fácil de obtener información de una URL sin tener que recargar la página completa. Una página web puede actualizar sólo una parte de la página sin interrumpir lo que el usuario está haciendo. XMLHttpRequest es ampliamente usado en la programación AJAX.
+
+En resumen. Vamos a generar un nuevo XMLHttpRequest para poder justamente tener la conexión con nuestro back end, nuestra API.
+
+(*2)El metodo .open(metodo, url) recibe esos dos parametros.
+
+CRUD     --    Metodos HTTP
+Create   --    POST
+Recibe   --    GET         - Obtener
+Update   --    PUT/PATCH
+Delete   --    DELETE
+
+(*3)Con el metodo .sent(); se encarga de enviar la peticion. Es decir, desde nuestro proyecto está saliendo hacia el servidor, que se encuentra esta URL. 
+
+(*4)En este punto, inicializamos la clase y enviamos la peticion, pero todavia no tenemos el resultado o respuesta que nos da el servidor. Para eso utilizamos el metodo .onload.  
+Esto significa que una vez que cargues o que termines de recibir una respuesta, va a ejecutar esa funcion.
+Nota: el .response es la respuesta de una peticion que viene del XMLHttpRequest creado antes en *1, en este caso tiene el nombre de 'http'
+
+(*5)Nosotros queremos generar una esstructura HTML, eso lo vamos a hacer en la funcion crearNuevaLinea(). Recordar que cuando queremos escribir contenido HTML es JS, tenemos que usar las comillas invertidas.
+
+(*6)Esta estrructura HTML del punto anterior, queremos que se muestre en el tbody [data-table]. Tomamos esta data atribute en este respectivo punto.
+
+(*7)La variable 'response' es un array con todos los datos de los clientes, esos datos son la respuesta del Backend/API. Para este array vamos a usar forEach para que por cada cliente, se ejecute la funcion crearNuevaLinea(perfil.nombre, perfil.email). Los dosparametros corresponden al nombre e email del objeto del archivo db.json.
+Esto lo guardamos dentro de la variable const nuevaLinea para luego hacer appendChild y agregarlo al HTML de [data-table] (de la variable 'table' creado en el punto *6).
+
+Basicamente, creará perfil por perfil (con el forEach) el contenido HTML y CSS de acuerdo a la informacion recibida por el servidor (El nombre e email traidos por el crearNuevaLinea() y su appendChild para crearla en la pagina).
+
+(*8) Hay que hacer una aclaracion. El 'response' no es un array directamente de Javascript, sino que es solo texto. Por eso lo de HTTP (Hypertext Transfer Protocol).
+Este texto lo tenemos que transformar a codigo JavaScript con JSON.
+La informacion del 'response' nos la regresa nuestro Backend/API que se encuentra en el localhost:3000.
+
+En otras palabras, convertimos la respuesta de http (http.response) que obtuvimos luego del .send(). 
+Lo hicimos JSON.parse() para convertir esa informacion de texto a un objeto. Así poder usarlo en JS. 
+
+(*9)Ahora, lo que tenemos que ver es la parte de anidación.
+Es muy comun en las aplicaciones web que se vayan haciendo peticiones una vez que se termina alguna otra. Es decir, que por ejemplo después de tener una respuesta, quiera generar alguna otra petición, etc.
+Si queremos que luego de que cargue la informacion de la primera peticion hecha(nombre e email ingresados), queremos hacer una nueva peticion, por ejemplo a los perfiles creados en el dia de hoy, podriamos hacer lo que se muestra en este punto (lo que se muestra es solo un ejemplo).
+
+/*(*9) Ejemplo de segunda peticion 
+    const http2 = new XMLHttpRequest();
+    http2.open("GET", "http://localhost:3000/perfil/hoy");
+    http2.send();
+    http2.onload=()=>{
+      const response2 = JSON.parse(http2.response);
+      etc etc etc etc etc...
+    }
+*/
+
+
+------Lidiando con promesas--------------------
+Como vimos recien, podemos tener diferentes funciones anidadas, va a llegar un punto en el cual va a ser demasiado complejo de poder mantener este código. A esta estructura de programación la conoce como Callback hell, es como el infierno de los callback.
+Es prácticamente ir anidando funciones sobre funciones, es decir esperar que se complete una función para después ejecutar alguna otra.
+También podríamos llegar a tener esa estructura compleja por trabajar con diferentes respuestas de nuestra Api, y para esto existe algo que desarrollaron los que se encargan de mantener JavaScript llamado Promise.
+
+El objeto Promise es usado para poder ejecutar funciones de una manera asíncrona, es decir, de que no tenemos que esperar a obtener el resultado para poder seguir ejecutando nuestro progama.
+
+Mas informacion sobre Promesas:
+https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Global_Objects/Promise#par%C3%A1metros
+
+Pensemos un ejemplo:Supongamos que estamos llamando una informacion como la que hicimos en este proyecto, es decir, que recibamos lo del nombre e email. Pero imaginemos que esta tarde 15 segundos en obtener la informacion. Eso haría que nuestra pagina quede congelada/cargando en ese tiempo. En ese caso, las paginas como youtube, muestran loaders mientras se espera a que lleguen los videos y textos. Esta funcion de mostrar loaders es asincrona. 
+
+Una clase Promesa se crea con 'new Promise(function(resolver, rechazar){...});'. Esta recibe como parametros la funcion con los dos argumentos mostrados.
+
+Una Promesa se encuentra en uno de los siguientes estados:
+- Pendiente (pending): Estado inicial, no cumplida o rechazada.
+- Cumplida (fulfilled): La operacion se completo satisfactoriamente. Cuando se cumpla va a llamar la funcion de 'resolver', como vimos arriba.
+- Rechazada (rejected): La operacion falló. Cuando se cumpla va a llamar la funcion de 'rechazar', como vimos arriba.
+
+Luego de ser cumplida  rechazada, puede entrar a un metodo .then, que seria como un "entonces".
+Cuando es rechazada por ejemplo, podemos cachar ese error con el .chatch.
+
+
+Podriamos hacer un flujo como el siguiente: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/promises.png
+
+------------------------------
+------ Volviendo al codigo
+(*10)Voy a crear una funcion listaClientes() con una nueva Promise dentro. Esta va a tener como parametro la arrow function con resolve y reject como parametros. 
+Dentro de la promesa, voy a generar todo lo hecho desde el punto *1 *2 *3 *4 *8.
+
+La const promise va a ser igual lo que nos regresa la nueva instancia de Promise. Y no vamos a esperar a que se termine de ejecutar para poder seguir ejecutando nuestro demás código. Es asincrono.
+
+
+(*11)Primero voy a verificar el estado de la llamada HTTP. Van de 100, 200, 300, 400 y 500. Yo quiero verificar que si el estado (status) de http es mayor o igual a 400, hay un error en nuestra peticion.  
+La infromacion dentro de 'response' voy a querer regresarlo dentro del resolve o reject. 
+Si el http.status es 400 o mayor , llamará al reject porque hay un error en nuestra peticion. Sino llamará al resolve por la operacion exitosa, que nos retornará el objeto con la informacion que hay dentro de 'response'.  
+
+En este punto, la informacion la tenemos pero esta pendiente (Está esperando un .then).
+
+(*12) Vamos a crear un .then que es la funcion que se va a ejecutar en el caso de que tenga la informacion.  
+Tendrá como parametro el nombre 'data', puede ser cualquier nombre.
+
+Aclaracion: El 'response', que es la respuesta que tenemos, una vez que salga de la promesa al ser aprobado por resolve y luego del return, se va a convertir en 'data' por así decirlo.
+Lo que quiero dejar en claro es que el parametro dentro del listaClientes().then((parametro)=>{...}), va a ser la informacion que nos retorna la promesa, en este caso, va a ser el objeto con el nombre e email.
+
+Atencion: El return es fundamental, sino la informacion nunca saldrá de la funcion.
+
+(*13) Haremos un .catch((error)=>) que como parametro tiene una funcion con el parametro 'error' (puede ser cualquier noombre) que se ejecutará en el caso de que ocurra un error (validado por reject). Este .catch(). va luego del .then y tiene como funcion mostrar el mensaje de error.
+
+---------------------------------------------------------------------
+------------Fetch API------------------------
+El Fetch API es una funcion que ya tiene nuestro navegador. Esta sirve para trabajar mas rapido con promesas. Es para comunicarnos de manera mas sencilla con nuestro servidor.
+En la funcion fetch(), dentro colocamos la url del servidor la cual nos devuelve una promesa. 
+Podríamos utilizar Fetch API para hacer todo lo de la funcion listaClientes() en una sola linea. Con:
+fetch ("http://localhost:3000/perfil")
+Como esta funcion abre una conexion a esa url. Nos devuelve una promesa, entonces podemos hacer un .then y tener acceso a la respuesta que nos devolvió el fecth(). Lo hacemos con:
+.then(respuesta => {...});
+Si recordamos lo que hicimos originalmente, teniamos que hacer un JSON.parse() para pasar el texto a javascript. Podemos hacerlo con:
+.json() para darle ese formate y poder trabajar con el. 
+
+(*14)Entonces nos quedaría lo siguiente:
+fetch ("http://localhost:3000/perfil").then(respuesta => { respuesta.json() });
+
+//Explicacion de la linea:
+//El fetch() nos conecta con la url y esta nos devuelve una promesa. Una vez que se complete esa promesa, entonces (.then), la vamos a recibir en la funcion y la vamos a tranformar la respuesta de la peticion fetch en un objeto JS (.json()). 
+//Una vez que se transforme a json, vamos a tener acceso a 'data' que lo tenemos en el listaClientes().then() del archivo. 
+
+ACLARACION:
+Cuando la url del fetch la escribimos como hicimos recien 
+'fetch ("http://localhost:3000/perfil")', no estamos declarando el metodo http. Por defecto está en GET.
+
+-------Acomodando el codigo para que sea mas legible-------
+Recordando lo que hace el archivo client-service.js:
+
+crearNuevaLinea() se encarga de recibir dos parámetros, generar un template y lo retorna.
+La const 'table' se encarga de seleccionar dónde es que se va a incluir esta información ([data-table] en este caso).
+Luego, llamamos listaClientes() y trabajamos con la respuesta gracias al .then. Dentro de esta, lo que hace es que por cada perfil, se generará una nueva linea con la informacion y la agregaremos a la tabla 'table' gracias al appendChild().
+
+---Para acomodar todo esto:
+voy a mover el crearNuevaLinea(), el 'table' y listaClientes().then() del client-service.js y lo voy a pegar en un nuevo archivo que llamo client-controller.js.
+
+En este momento quedara solo el listaClientes() en el client-service.js.
+Recordemos que este funcion solo se encargará de establecer la comunicacion con el servidor, recibir la respuesta, y convertirlo a json.
+Mientras que las otras funciones en client-controller.js, se encargaran de la interaccion entre JS y html.
+(Recordemos cambiar el link de script del html a client-controller.js)
+
+En client-services.js, creamos un objeto llamado 'clientServices', que contendrá la lista de clientes que nos devuelve el servidor. Este objeto, lo exportamos a client-controller.js para utilizarlo en el listaClientes().then(). 
+Y para eso tenemos que entrar al objeto de la siguiente a¿manera:
+clientServices.listaClientes().then().
+
+
+--------------UN POCO DE TEORIA-------------
+------Event loop-----  
+JavaScript tiene un orden sobre como ejecutar funciones. Tenemos 3 lineas de tipos de funciones:
+1° Task Queue (Ejecuciones de funciones mas directas. Son las ejecuciones de comandos nativos de JavaScript, No de WebApi).
+2° Micro-Task (Puede ser lo que requiera una espera y que SI sea promesa, como el .then()).
+3° Tareas en espera (Lo que requiera esperar un tiempo para su ejecucion pero que NO sea Promise). 
+
+El Event Loop preguntará de que tipo de linea pertenece cada ejecucion en el Call Stack. El Event Loop siempre preguntará en cada una si tienen tareas por ejecutarse. 
+Cuando las tareas estan listas para ejecutarse, pasaran por el Call Stack.
+Siempre se ejecutará primero las tareas que hayan en la 1° linea, cuando esta se vacía se ejecutará lo de la 2°. Cuando esta se vacie se ejecutará lo de la 3°. Y fin del programa.
+-----------------------------------------------------------------
+
+
+CREANDO UN CLIENTE-------------
+Nosotros queremos que en el registrar-cliente.html. Se ingrese el usuario y email en los inputs. Al darle click en registrar, se toma esa informacion y se la manda a otra funcion que se conectará a nuestra API.
+
+
+(*15) Creamos la funcion para agarrar el nombre y el email del formulario.
+
+(*16) Creamos la funcion para recibir la informacion y enviarla a nuestro servidor. La hacemos en client-service.js.
+(*16.1)La funcion crearCliente() tendrá 3 parametros llamados 'nombre','email', 'id'. Estos hacen referencia al valor de la variable nombre e email que vamos a recibir del punto *15.
+(*16.2)El 'id' será una identificacion aleatoria dada por la libreria uuid con la funcion uuid.v4(). Primero fui a la pagina, copié su etiqueta <script> y la pegué en el registrar_cliente.html para utilizar sus funciones. 
+(*16.3)Dentro de crearCliente(), haremos una promesa con fetch() con la url a nuestro servidor, ademas, dentro de un objeto aclararemos el metodo POST para enviar la info al servidor (sino por defecto es GET), headers, body.
+El headers es un objeto que sirve para que el servidor sepa qué tipo de archivo es el que va a recibir. En este caso es 
+"Content-Type": "application/json".
+En el body de la promesa es un objeto que, estará la informacion que queríamos enviar (es decir, nombre, email, id). Esta se mostrará en el db.json. 
+Recordemos qe la comunicacion http trabaja con texto, entonces para poder pasar de objeto JSON a una cadena de texto, utilizaremos JSON.stringify() con la informacion. Entonces se enviará en http.
+body:JSON.stringify({nombre,email, id});
+
+(*16.4)importamos la funcion crearCliente() a registro-controller.js y la llamamos con los parametros nombre, email que agarramos de los inputs en el *15.
+(*16.5) Gracias a todo lo causado por el fetch, la funcion crearCliente() es una promesa, por ende podemos darle .then y .catch.
+Se entra al .then si la petición se resolvió. Y esta tendrá dentro el parametro llamado 'respuesta' que contendrá la respuesta del servidor con toda la informacion. 
+(*16.6)Y queremos que nos envíe al html que nos indica la operacion exitosa.
+Se entra al .catch si se rechazó la peticion. Y nos mostrará un error.
